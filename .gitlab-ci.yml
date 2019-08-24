@@ -1,0 +1,28 @@
+image:
+  name: hashicorp/terraform:light
+  entrypoint:
+    - "/usr/bin/env"
+    - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+stages:
+  - "Validate"
+  - "Analysis"
+  - "Test"
+  - "Package"
+  - "Deploy"
+
+variables:
+  AWS_REGION: us-east-1
+
+validate:
+  stage: "Validate"
+  script:
+    - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
+    - terraform init -input=false
+    - terraform validate
+
+analysis:
+  stage: "Analysis"
+  image: cardboardci/tflint:edge
+  script:
+    - tflint
